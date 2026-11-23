@@ -2,7 +2,7 @@
 
 Mobile-first website for a residential cleaning company serving Justin, Northlake, Trophy Club, Southlake and Westlake, Texas.
 
-**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS · Prisma · SQLite · Zod · bcryptjs · Vitest
+**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS · Prisma · PostgreSQL · Zod · bcryptjs · Vitest
 
 ## What's included
 
@@ -22,12 +22,12 @@ Requires Node.js 18.18 or newer.
 ```bash
 npm install
 cp .env.example .env        # then edit .env (see "Fill these in" below)
-npx prisma migrate dev --name init   # creates prisma/dev.db and the tables
+npx prisma migrate deploy   # creates the tables in your PostgreSQL database
 npm run db:seed             # optional: 3 sample clients for the dashboard demo
 npm run dev                 # http://localhost:3000
 ```
 
-If you prefer not to create a migration file, `npx prisma db push` also creates the tables.
+Set `DATABASE_URL` in `.env` to a PostgreSQL database you can reach (for example a local install, or a free Neon database).
 
 **Demo logins (from the seed, local only):** `ama@example.com`, `carlos@example.com` or `priya@example.com`, password `DemoPass123!`. Admin: the value of `ADMIN_PASSWORD` in `.env` at `/admin`.
 
@@ -77,7 +77,7 @@ No prices are hard-coded in components.
 
 ## Deploy (Vercel)
 
-> **Important:** SQLite stores data in a local file. Vercel's serverless functions cannot write to a persistent local disk, so **SQLite on Vercel will lose data** and cannot run reliably there. Before deploying to Vercel, move to a hosted database. Prisma supports Postgres, so you can use Vercel Postgres (Neon), Supabase, or Turso. Change `provider` in `prisma/schema.prisma`, set `DATABASE_URL`, and run `npx prisma migrate deploy`.
+> The database is PostgreSQL (Vercel Postgres, powered by Neon). The build runs `prisma migrate deploy`, so `DATABASE_URL` must be set in Vercel before the first build.
 >
 > The in-memory rate limiter in `src/lib/rate-limit.ts` is also per-instance on serverless. Replace it with Redis or Upstash for real limits.
 
@@ -86,14 +86,14 @@ Once the database is hosted:
 1. Push the repository to GitHub.
 2. In Vercel, **Add New → Project**, import the repository. The framework preset is Next.js.
 3. Add every variable from `.env.example` under **Settings → Environment Variables**. Set `NEXT_PUBLIC_SITE_URL` to your production URL.
-4. Build command: `npm run build` (it runs `prisma generate` first). Run `npx prisma migrate deploy` against the production database, from your machine or a build step.
+4. Build command: `npm run build`. It runs `prisma generate`, then `prisma migrate deploy` against `DATABASE_URL`, then `next build`.
 5. Deploy, then test booking, login, the pause flow and `/admin` on the production URL.
 
 ## Project layout
 
 ```
 config/          Editable business config (prices, ZIPs, site rules)
-prisma/          Schema, seed script, SQLite dev DB (git-ignored)
+prisma/          Schema, seed script, migration files
 public/          Logo
 src/app/         Pages and server actions (App Router)
 src/components/  UI components and client-side forms

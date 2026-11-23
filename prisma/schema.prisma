@@ -1,5 +1,5 @@
 // Prisma schema for Justin Cleaning Co.
-// SQLite is used so the app runs locally with no external services.
+// PostgreSQL: used in production (Vercel Postgres / Neon) and in local development.
 // Enum-like fields are stored as strings (SQLite has no native enums in Prisma);
 // allowed values are defined in src/lib/constants.ts and validated with Zod.
 
@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
