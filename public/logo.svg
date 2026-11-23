@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="850" viewBox="0 0 1200 850" role="img" aria-label="Justin Cleaning Co logo">
+<title>Justin Cleaning Co.</title>
+<!-- Transparent background; flat vector artwork -->
+<g fill="none" stroke="#1F2A44" stroke-width="35" stroke-linecap="round" stroke-linejoin="round">
+<path d="M325 340 L600 100 L875 340"/>
+</g>
+<path fill="#1F2A44" d="M743 215 V162 Q743 151 755 151 H789 Q801 151 801 163 V265 Z"/>
+<g fill="#2BB3A3"><rect x="553" y="237" width="38" height="38" rx="6"/><rect x="605" y="237" width="38" height="38" rx="6"/><rect x="553" y="289" width="38" height="38" rx="6"/><rect x="605" y="289" width="38" height="38" rx="6"/><path d="M903 85 Q916 151 980 165 Q916 178 903 245 Q889 178 825 165 Q889 151 903 85 Z"/></g>
+<text x="600" y="580" font-family="DejaVu Sans,Arial,sans-serif" font-size="218" font-weight="bold" text-anchor="middle" fill="#1F2A44" letter-spacing="-8">Justin</text>
+<text x="600" y="682" font-family="DejaVu Sans,Arial,sans-serif" font-size="77" font-weight="bold" text-anchor="middle" fill="#1F2A44" letter-spacing="7">CLEANING CO.</text>
+<path d="M290 742 Q600 675 910 742 Q600 708 290 742 Z" fill="#2BB3A3"/>
+</svg>

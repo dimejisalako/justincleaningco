@@ -1,0 +1,138 @@
+// Prisma schema for Justin Cleaning Co.
+// SQLite is used so the app runs locally with no external services.
+// Enum-like fields are stored as strings (SQLite has no native enums in Prisma);
+// allowed values are defined in src/lib/constants.ts and validated with Zod.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String
+  createdAt    DateTime @default(now())
+
+  addresses     Address[]
+  plans         Plan[]
+  bookings      Booking[]
+  sessions      Session[]
+  resetTokens   PasswordResetToken[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique // SHA-256 of the random cookie value; the raw token is never stored
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  label     String   @default("Home")
+  line1     String
+  city      String
+  zip       String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// A recurring cleaning arrangement (weekly, every_two_weeks, monthly).
+// One-time bookings do not create a Plan.
+model Plan {
+  id              String   @id @default(cuid())
+  userId          String
+  frequency       String   // "weekly" | "every_two_weeks" | "monthly"
+  status          String   @default("active") // "active" | "paused" | "cancelled"
+  priceCents      Int      // Price per visit, locked at signup; unchanged on pause/resume
+  addressLine1    String
+  city            String
+  zip             String
+  sqftTier        String   // key from config/pricing.ts
+  addons          String   @default("[]") // JSON array of add-on keys
+  deepClean       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pauses   Pause[]
+  bookings Booking[]
+
+  @@index([userId])
+}
+
+// A pause on a recurring plan. Days paused count against the per-calendar-year limit.
+model Pause {
+  id          String    @id @default(cuid())
+  planId      String
+  startDate   DateTime  // inclusive, stored at local midnight (UTC date)
+  endDate     DateTime  // inclusive; shortened to the resume date if resumed early
+  resumedAt   DateTime? // set when the client unpauses
+  createdAt   DateTime  @default(now())
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+}
+
+// A single cleaning visit. Guest bookings have userId = null until the guest registers
+// with the same email (linked at registration).
+model Booking {
+  id                String    @id @default(cuid())
+  confirmationCode  String    @unique
+  userId            String?
+  planId            String?
+  name              String
+  phone             String
+  email             String
+  addressLine1      String
+  city              String
+  zip               String
+  sqftTier          String
+  frequency         String    // "one_time" | "every_two_weeks" | "weekly" | "monthly"
+  deepClean         Boolean   @default(false)
+  addons            String    @default("[]")
+  scheduledFor      DateTime  // date of the visit
+  timeWindow        String    // "morning" | "afternoon" | "evening"
+  accessNotes       String    @default("")
+  smsConsent        Boolean   @default(false)
+  status            String    @default("requested") // requested | confirmed | completed | cancelled | paused
+  priceCents        Int       // amount for this visit (0 for custom quotes until priced)
+  isCustomQuote     Boolean   @default(false)
+  paymentStatus     String    @default("unpaid") // unpaid | invoiced | paid (no payment integration in v1)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  plan Plan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([scheduledFor])
+  @@index([email])
+}
