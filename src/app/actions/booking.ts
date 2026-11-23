@@ -48,6 +48,7 @@ export async function createBookingAction(_prev: FormState, formData: FormData):
     accessNotes: formString(formData, "accessNotes"),
     smsConsent: formBool(formData, "smsConsent"),
   };
+  const useReward = formBool(formData, "useReward");
   // Echo the submitted values back so the form can be re-filled after an error.
   const values: Record<string, string> = Object.fromEntries(
     Object.entries(raw).map(([k, v]) => [
@@ -68,7 +69,9 @@ export async function createBookingAction(_prev: FormState, formData: FormData):
   }
 
   // Deep clean includes every add-on, so the add-on list is always the full set for a deep clean.
-  const addonsApplied = b.deepClean ? (Object.keys(ADDONS) as AddonKey[]) : (b.addons as AddonKey[]);
+  // A free deep clean reward is always a deep clean, so it also includes every add-on.
+  const deepApplied = b.deepClean || useReward;
+  const addonsApplied = deepApplied ? (Object.keys(ADDONS) as AddonKey[]) : (b.addons as AddonKey[]);
 
   // The visit must be tomorrow or later (business timezone).
   const visitDate = parseDateOnly(b.scheduledFor);
@@ -80,7 +83,7 @@ export async function createBookingAction(_prev: FormState, formData: FormData):
   const price = calculatePrice({
     tier: b.sqftTier as SqftTierKey,
     frequency: b.frequency as FrequencyKey,
-    deepClean: b.deepClean,
+    deepClean: deepApplied,
     addons: addonsApplied,
   });
   const isCustomQuote = price.kind === "custom_quote";
@@ -88,6 +91,33 @@ export async function createBookingAction(_prev: FormState, formData: FormData):
 
   const user = await getCurrentUser();
   const confirmationCode = newConfirmationCode();
+
+  // Redeeming a free deep clean: the visit costs nothing and uses the client's oldest available reward.
+  let reward: { id: string } | null = null;
+  if (useReward) {
+    if (!user) {
+      return { status: "error", message: "Log in to use a free deep clean.", values };
+    }
+    if (b.frequency !== "one_time") {
+      return {
+        status: "error",
+        errors: { frequency: "Free deep cleans apply to one-time bookings. Choose One-time to use your reward." },
+        values,
+        message: "Please check the highlighted fields.",
+      };
+    }
+    if (isCustomQuote) {
+      return { status: "error", message: "Free deep cleans can't be applied to homes that need a custom quote.", values };
+    }
+    reward = await db.reward.findFirst({
+      where: { userId: user.id, status: "available" },
+      orderBy: { earnedOn: "asc" },
+      select: { id: true },
+    });
+    if (!reward) {
+      return { status: "error", message: "You don't have a free deep clean available right now.", values };
+    }
+  }
 
   const booking = await db.booking.create({
     data: {
@@ -101,17 +131,25 @@ export async function createBookingAction(_prev: FormState, formData: FormData):
       zip: b.zip,
       sqftTier: b.sqftTier,
       frequency: b.frequency,
-      deepClean: b.deepClean,
+      deepClean: deepApplied,
       addons: JSON.stringify(addonsApplied),
       scheduledFor: visitDate,
       timeWindow: b.timeWindow,
       accessNotes: b.accessNotes,
       smsConsent: b.smsConsent,
       status: "requested",
-      priceCents,
+      priceCents: reward ? 0 : priceCents,
       isCustomQuote,
+      isRewardVisit: !!reward,
     },
   });
+
+  if (reward) {
+    await db.reward.update({
+      where: { id: reward.id },
+      data: { status: "redeemed", redeemedBookingId: booking.id, redeemedAt: new Date() },
+    });
+  }
 
   // Recurring bookings from signed-in clients also create a plan so pauses can apply to it.
   if (user && isRecurring(b.frequency)) {
@@ -131,9 +169,11 @@ export async function createBookingAction(_prev: FormState, formData: FormData):
     await db.booking.update({ where: { id: booking.id }, data: { planId: plan.id } });
   }
 
-  const priceLine = isCustomQuote
-    ? "Custom quote: we'll contact you with a price."
-    : `Price for this visit: ${formatMoney(priceCents)} (payable after the visit by invoice or payment link).`;
+  const priceLine = reward
+    ? "This is your free deep clean, earned as a reward. There is no charge for this visit."
+    : isCustomQuote
+      ? "Custom quote: we'll contact you with a price."
+      : `Price for this visit: ${formatMoney(priceCents)} (payable after the visit by invoice or payment link).`;
 
   await sendEmail({
     to: b.email,

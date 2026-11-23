@@ -10,7 +10,7 @@ export const TAGLINE = "Residential cleaning in Justin, Northlake, Trophy Club, 
 export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
 
 /** Contact email shown in the footer. PLACEHOLDER until set in .env. */
-export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@example.com";
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "info@justincleaningco.com";
 
 /** Shown in the footer and on the legal pages. */
 export const BUSINESS_ADDRESS = "Wildflower Ranch, Justin, Texas";

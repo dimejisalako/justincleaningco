@@ -40,8 +40,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
             <Link href="/" className="flex items-center gap-2" aria-label={`${BRAND_NAME} home`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.svg" alt="" width={1200} height={850} className="h-12 w-auto" />
-              <span className="text-lg font-extrabold tracking-tight text-navy">{BRAND_NAME}</span>
+              {/* The logo already includes the business name, so no separate text is shown. */}
+              <img src="/logo.svg" alt="" width={1200} height={850} className="h-14 w-auto" />
             </Link>
 
             <nav aria-label="Main" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold">

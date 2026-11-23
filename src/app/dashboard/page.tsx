@@ -4,6 +4,8 @@ import { CancelVisitForm, AddressForm, PauseForm, RescheduleForm, ResumeForm } f
 import { db } from "@/lib/db";
 import { addDays, formatDate, formatMoney, toDateOnly, todayInBusinessZone } from "@/lib/dates";
 import { syncPlanStatus } from "@/lib/bookings";
+import { syncRewards, spendSummary } from "@/lib/rewards-sync";
+import { REWARD_THRESHOLD_CENTS } from "@/lib/rewards";
 import { pausedDaysInYear, remainingPauseDays } from "@/lib/pause";
 import { FREQUENCIES, FrequencyKey } from "../../../config/pricing";
 import { PAUSE_MAX_DAYS_PER_YEAR, TIME_WINDOWS } from "../../../config/site";
@@ -18,6 +20,8 @@ export default async function DashboardPage() {
   // Keep plan status correct before rendering (a pause may have ended since the last visit).
   const planIds = await db.plan.findMany({ where: { userId: user.id }, select: { id: true } });
   for (const { id } of planIds) await syncPlanStatus(id, today);
+  await syncRewards(user.id);
+  const spend = await spendSummary(user.id);
 
   const plans = await db.plan.findMany({
     where: { userId: user.id, status: { not: "cancelled" } },
@@ -40,6 +44,35 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-extrabold text-navy">Hi {user.name.split(" ")[0]}</h1>
         <p className="mt-1 text-navy-600">Manage your visits, recurring plan and saved addresses.</p>
       </div>
+
+      {/* SPEND AND REWARDS */}
+      <section aria-labelledby="spend-heading" className="space-y-4">
+        <h2 id="spend-heading" className="text-2xl font-bold text-navy">Spending and rewards</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="card">
+            <p className="text-sm text-navy-600">Total spent</p>
+            <p className="text-2xl font-extrabold text-navy">{formatMoney(spend.totalSpentCents)}</p>
+            <p className="text-xs text-navy-600">{spend.visitsCount} completed visit(s)</p>
+          </div>
+          <div className="card sm:col-span-1 lg:col-span-2">
+            <p className="text-sm text-navy-600">Progress to a free deep clean</p>
+            <p className="text-2xl font-extrabold text-navy">
+              {formatMoney(spend.pendingCents)} <span className="text-base font-semibold text-navy-600">of {formatMoney(REWARD_THRESHOLD_CENTS)}</span>
+            </p>
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-navy-50" role="progressbar" aria-valuemin={0} aria-valuemax={REWARD_THRESHOLD_CENTS} aria-valuenow={Math.min(spend.pendingCents, REWARD_THRESHOLD_CENTS)}>
+              <div className="h-full bg-teal" style={{ width: `${Math.min(100, (spend.pendingCents / REWARD_THRESHOLD_CENTS) * 100)}%` }} />
+            </div>
+            <p className="mt-2 text-xs text-navy-600">Spend {formatMoney(REWARD_THRESHOLD_CENTS)} in a 3-month window to earn a free deep clean.</p>
+          </div>
+          <div className="card">
+            <p className="text-sm text-navy-600">Free deep cleans available</p>
+            <p className="text-2xl font-extrabold text-navy">{spend.availableRewards}</p>
+            {spend.availableRewards > 0 ? (
+              <a className="mt-2 inline-block text-sm font-semibold underline" href="/book">Book one now</a>
+            ) : null}
+          </div>
+        </div>
+      </section>
 
       {/* RECURRING PLANS */}
       <section aria-labelledby="plans-heading" className="space-y-4">
@@ -174,7 +207,10 @@ export default async function DashboardPage() {
                 {past.map((b) => (
                   <tr key={b.id} className="border-b border-navy-100 last:border-0">
                     <td className="px-4 py-3">{formatDate(b.scheduledFor)}</td>
-                    <td className="px-4 py-3 capitalize">{b.status}</td>
+                    <td className="px-4 py-3 capitalize">
+                      {b.status}
+                      {b.isRewardVisit ? <span className="ml-2 rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700">Free deep clean</span> : null}
+                    </td>
                     <td className="px-4 py-3">{b.isCustomQuote ? "Custom quote" : formatMoney(b.priceCents)}</td>
                     <td className="px-4 py-3 capitalize">{b.paymentStatus}</td>
                   </tr>

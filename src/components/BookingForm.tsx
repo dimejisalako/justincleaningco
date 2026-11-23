@@ -32,11 +32,15 @@ export function BookingForm({
   defaults,
   minDate,
   maxDate,
+  freeDeepCleans = 0,
 }: {
   defaults: BookingDefaults;
   minDate: string;
   maxDate: string;
+  /** Free deep clean rewards the signed-in client can use (0 for guests). */
+  freeDeepCleans?: number;
 }) {
+  const [useReward, setUseReward] = useState(false);
   const [state, formAction] = useActionState(createBookingAction, initialState);
   const v = state.status === "error" ? state.values ?? {} : {};
   const errors = state.status === "error" ? state.errors : undefined;
@@ -63,6 +67,15 @@ export function BookingForm({
   const onDeepClean = (checked: boolean) => {
     setDeepClean(checked);
     setAddons(checked ? (Object.keys(ADDONS) as AddonKey[]) : []);
+  };
+
+  // A free deep clean is a one-time deep clean with every add-on, at no charge.
+  const onUseReward = (checked: boolean) => {
+    setUseReward(checked);
+    if (checked) {
+      setFrequency("one_time");
+      onDeepClean(true);
+    }
   };
 
   return (
@@ -127,10 +140,19 @@ export function BookingForm({
               error={errors?.frequency}
             />
           </div>
+          {freeDeepCleans > 0 ? (
+            <CheckboxField
+              name="useReward"
+              checked={useReward}
+              onChange={(e) => onUseReward(e.target.checked)}
+              label={`Use a free deep clean reward (${freeDeepCleans} available). This visit is $0 and must be one-time.`}
+            />
+          ) : null}
           <CheckboxField
             name="deepClean"
             label="Deep clean (1.5× the one-time price)"
             checked={deepClean}
+            disabled={useReward}
             onChange={(e) => onDeepClean(e.target.checked)}
           />
           <fieldset>
@@ -188,7 +210,15 @@ export function BookingForm({
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-        <PriceBox result={preview} frequencyLabel={FREQUENCIES[frequency].label} perVisitLabel={frequency !== "one_time"} />
+        {useReward ? (
+          <div className="rounded-xl border border-teal-100 bg-teal-50 p-5" aria-live="polite">
+            <p className="text-sm font-semibold uppercase tracking-wide text-navy-600">Your price</p>
+            <p className="mt-1 text-4xl font-extrabold text-navy">$0.00</p>
+            <p className="mt-2 text-sm text-navy-600">Free deep clean with every add-on included, earned as a reward.</p>
+          </div>
+        ) : (
+          <PriceBox result={preview} frequencyLabel={FREQUENCIES[frequency].label} perVisitLabel={frequency !== "one_time"} />
+        )}
         <div className="hidden lg:block">
           <SubmitButton pendingText="Sending your request…" className="btn-primary w-full">
             Request booking

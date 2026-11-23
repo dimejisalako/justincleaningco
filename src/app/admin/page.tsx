@@ -7,7 +7,8 @@ import { db } from "@/lib/db";
 import { formatDate, formatMoney, todayInBusinessZone } from "@/lib/dates";
 import { FREQUENCIES, FrequencyKey } from "../../../config/pricing";
 import { TIME_WINDOWS } from "../../../config/site";
-import { adminLogoutAction, updateBookingAction } from "./actions";
+import { updateBookingAction } from "./actions";
+import { AdminNav } from "@/components/admin-ui";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -37,9 +38,7 @@ export default async function AdminPage() {
     <div className="mx-auto max-w-6xl space-y-10 px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-extrabold text-navy">Bookings</h1>
-        <form action={adminLogoutAction}>
-          <SubmitButton className="btn-secondary" pendingText="Logging out…">Log out of admin</SubmitButton>
-        </form>
+        <AdminNav current="bookings" />
       </div>
 
       <BookingTable title={`Today (${formatDate(today)})`} rows={todays} empty="No visits today." />

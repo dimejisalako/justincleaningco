@@ -23,6 +23,7 @@ model User {
   addresses     Address[]
   plans         Plan[]
   bookings      Booking[]
+  rewards       Reward[]
   sessions      Session[]
   resetTokens   PasswordResetToken[]
 }
@@ -103,9 +104,29 @@ model Pause {
 
 // A single cleaning visit. Guest bookings have userId = null until the guest registers
 // with the same email (linked at registration).
+// A free deep clean earned by spending $2,500 within a rolling 3-month window.
+// source "auto" rewards are created from completed visits; "manual" ones are granted by the owner.
+model Reward {
+  id                  String    @id @default(cuid())
+  userId              String
+  status              String    @default("available") // available | redeemed | void
+  source              String    @default("auto")      // auto | manual
+  earnedOn            DateTime
+  earnedFromBookingId String?   @unique // the completed visit that triggered an auto reward
+  redeemedBookingId   String?   @unique // the free visit that used this reward
+  redeemedAt          DateTime?
+  note                String    @default("")
+  createdAt           DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 model Booking {
   id                String    @id @default(cuid())
   confirmationCode  String    @unique
+  isRewardVisit     Boolean   @default(false) // true when this visit used a free deep clean reward
   userId            String?
   planId            String?
   name              String
