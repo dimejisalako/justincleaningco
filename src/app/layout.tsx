@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { BRAND_NAME, CONTACT_EMAIL, BUSINESS_ADDRESS, TAGLINE } from "../../config/site";
 import { SERVICE_CITIES } from "../../config/service-area";
 import { getCurrentUser } from "@/lib/auth";
@@ -117,6 +118,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </footer>
 
         <WhatsAppButton />
+        <Analytics />
       </body>
     </html>
   );
