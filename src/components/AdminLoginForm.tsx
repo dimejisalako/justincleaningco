@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { adminLoginAction } from "@/app/admin/actions";
+import { adminLoginAction } from "@/app/dimeji/actions";
 import { FormErrorSummary, TextField } from "@/components/fields";
 import { SubmitButton } from "@/components/SubmitButton";
 import type { FormState } from "@/lib/validation";

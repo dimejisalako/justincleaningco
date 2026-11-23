@@ -5,7 +5,7 @@
  * they earn one free deep clean. Spend that earns a reward is used up, so the next
  * reward needs a fresh $2,500. Spend older than 3 months stops counting.
  *
- * Only COMPLETED visits count (the owner marks them complete in /admin).
+ * Only COMPLETED visits count (the owner marks them complete in /dimeji).
  */
 
 export const REWARD_THRESHOLD_CENTS = 250_000; // $2,500

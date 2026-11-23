@@ -37,14 +37,14 @@ export async function setAdminCookie(): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/admin",
+    path: "/dimeji",
     maxAge: 60 * 60 * 8, // 8 hours
   });
 }
 
 export async function clearAdminCookie(): Promise<void> {
   const jar = await cookies();
-  jar.delete({ name: ADMIN_COOKIE, path: "/admin" });
+  jar.delete({ name: ADMIN_COOKIE, path: "/dimeji" });
 }
 
 export async function isAdmin(): Promise<boolean> {

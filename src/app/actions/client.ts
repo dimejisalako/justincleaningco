@@ -68,7 +68,7 @@ export async function pausePlanAction(_prev: FormState, formData: FormData): Pro
   });
   await syncPlanStatus(plan.id, today);
   revalidatePath("/dashboard");
-  revalidatePath("/admin");
+  revalidatePath("/dimeji");
 
   return {
     status: "success",
@@ -106,7 +106,7 @@ export async function resumePlanAction(_prev: FormState, formData: FormData): Pr
   await db.plan.update({ where: { id: plan.id }, data: { status: "active" } });
   await syncPlanStatus(plan.id, today);
   revalidatePath("/dashboard");
-  revalidatePath("/admin");
+  revalidatePath("/dimeji");
 
   return { status: "success", message: "Your plan is resumed at the same price." };
 }
@@ -140,7 +140,7 @@ export async function rescheduleVisitAction(_prev: FormState, formData: FormData
     data: { scheduledFor: newDate, timeWindow: parsed.data.timeWindow },
   });
   revalidatePath("/dashboard");
-  revalidatePath("/admin");
+  revalidatePath("/dimeji");
   return { status: "success", message: `Visit moved to ${formatDate(newDate)}.` };
 }
 
@@ -158,7 +158,7 @@ export async function cancelVisitAction(_prev: FormState, formData: FormData): P
 
   await db.booking.update({ where: { id: booking.id }, data: { status: "cancelled" } });
   revalidatePath("/dashboard");
-  revalidatePath("/admin");
+  revalidatePath("/dimeji");
   return { status: "success", message: "Visit cancelled." };
 }
 

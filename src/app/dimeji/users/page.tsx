@@ -10,7 +10,7 @@ import { TextField } from "@/components/fields";
 export const metadata: Metadata = { title: "Admin · Users", robots: { index: false, follow: false } };
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  if (!(await isAdmin())) redirect("/admin");
+  if (!(await isAdmin())) redirect("/dimeji");
   const { q = "" } = await searchParams;
   const term = q.trim();
 
@@ -77,7 +77,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                     <td className="px-3 py-3">{activePlans}</td>
                     <td className="px-3 py-3">{freeCleans}</td>
                     <td className="px-3 py-3">
-                      <Link href={`/admin/users/${u.id}`} className="font-semibold underline">Open</Link>
+                      <Link href={`/dimeji/users/${u.id}`} className="font-semibold underline">Open</Link>
                     </td>
                   </tr>
                 );

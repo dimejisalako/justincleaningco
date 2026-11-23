@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminNav, VisitActions } from "@/components/admin-ui";
 import { TextField } from "@/components/fields";
-import { grantRewardAction, voidRewardAction } from "@/app/admin/actions";
+import { grantRewardAction, voidRewardAction } from "@/app/dimeji/actions";
 import { isAdmin } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { formatDate, formatMoney, todayInBusinessZone } from "@/lib/dates";
@@ -15,7 +15,7 @@ import { TIME_WINDOWS } from "../../../../../config/site";
 export const metadata: Metadata = { title: "Admin · Client", robots: { index: false, follow: false } };
 
 export default async function AdminUserPage({ params }: { params: Promise<{ id: string }> }) {
-  if (!(await isAdmin())) redirect("/admin");
+  if (!(await isAdmin())) redirect("/dimeji");
   const { id } = await params;
 
   const user = await db.user.findUnique({
@@ -39,7 +39,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
       <AdminNav current="users" />
 
       <div>
-        <Link href="/admin/users" className="text-sm font-semibold underline">← All users</Link>
+        <Link href="/dimeji/users" className="text-sm font-semibold underline">← All users</Link>
         <h1 className="mt-2 text-3xl font-extrabold text-navy">{user.name}</h1>
         <p className="text-navy-600">
           {user.email} · {user.phone} · Joined {formatDate(new Date(user.createdAt.toISOString().slice(0, 10) + "T00:00:00Z"))}

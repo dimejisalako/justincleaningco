@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { adminLogoutAction, updateBookingAction } from "@/app/admin/actions";
+import { adminLogoutAction, updateBookingAction } from "@/app/dimeji/actions";
 
 /** Shared admin header with navigation and log out. Server component. */
 export function AdminNav({ current }: { current: "bookings" | "users" }) {
@@ -17,8 +17,8 @@ export function AdminNav({ current }: { current: "bookings" | "users" }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <nav aria-label="Admin" className="flex flex-wrap gap-2">
-        {link("/admin", "Bookings", "bookings")}
-        {link("/admin/users", "Users", "users")}
+        {link("/dimeji", "Bookings", "bookings")}
+        {link("/dimeji/users", "Users", "users")}
       </nav>
       <form action={adminLogoutAction}>
         <button type="submit" className="btn-secondary min-h-[40px] px-4 py-2 text-sm">Log out of admin</button>

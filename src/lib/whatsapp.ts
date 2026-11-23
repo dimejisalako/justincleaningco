@@ -15,7 +15,7 @@ export function pageLabelFor(pathname: string): string {
   if (pathname.startsWith("/forgot-password") || pathname.startsWith("/reset-password")) return "password reset";
   if (pathname.startsWith("/privacy")) return "privacy policy";
   if (pathname.startsWith("/terms")) return "terms of service";
-  if (pathname.startsWith("/admin")) return "admin";
+  if (pathname.startsWith("/dimeji")) return "admin";
   return "website";
 }
 

@@ -10,7 +10,7 @@ Mobile-first website for a residential cleaning company serving Justin, Northlak
 - **Book a cleaning:** guest booking (no account), address checked against the service area, price shown before submit, confirmation page and confirmation email.
 - **Client accounts:** register, log in, log out, forgot and reset password. Dashboard shows upcoming and past visits with amounts, plan details, pause and resume, reschedule and cancel, and saved addresses.
 - **Pause rules (enforced on the server):** up to 56 days (8 weeks) per calendar year, 7 days' notice, no fee, paused visits released, resumes at the same price.
-- **Admin:** password-protected `/admin` listing today's and upcoming bookings. Confirm, mark complete, cancel, and record payment status.
+- **Admin:** password-protected `/dimeji` listing today's and upcoming bookings. Confirm, mark complete, cancel, and record payment status.
 - **WhatsApp:** floating click-to-chat button on every page. The prefilled message names the page. No Business API.
 - **Legal:** Privacy Policy and Terms of Service, both marked "REVIEW WITH LEGAL".
 - **Quality:** Zod validation, rate limits on login, registration, booking and admin login, bcrypt password hashing, pricing and pause unit tests, and a seed script with 3 sample clients.
@@ -29,7 +29,7 @@ npm run dev                 # http://localhost:3000
 
 Set `DATABASE_URL` in `.env` to a PostgreSQL database you can reach (for example a local install, or a free Neon database).
 
-**Demo logins (from the seed, local only):** `ama@example.com`, `carlos@example.com` or `priya@example.com`, password `DemoPass123!`. Admin: the value of `ADMIN_PASSWORD` in `.env` at `/admin`.
+**Demo logins (from the seed, local only):** `ama@example.com`, `carlos@example.com` or `priya@example.com`, password `DemoPass123!`. Admin: the value of `ADMIN_PASSWORD` in `.env` at `/dimeji`.
 
 ### Email in development
 
@@ -73,7 +73,7 @@ No prices are hard-coded in components.
 - **Service area:** a listed ZIP is accepted. Any other address is accepted if it is within 5 miles of a listed ZIP's centre point. That check sends the address to the US Census Bureau's geocoder, so mention it in the privacy policy.
 - **Pauses:** at most 56 days per calendar year, counted per year when a pause crosses New Year. Start at least 7 days from today. Overlapping pauses are rejected. Visits in the window are set to `paused` and are not charged. Resuming early keeps the days already used and returns released visits still ahead to `requested`, so the owner re-confirms them.
 - **Cancel or reschedule:** 24 hours' notice before the start of the visit's time window (Central time).
-- **Confirmation:** bookings start as `requested`. The owner confirms them in `/admin`.
+- **Confirmation:** bookings start as `requested`. The owner confirms them in `/dimeji`.
 
 ## Deploy (Vercel)
 
@@ -87,7 +87,7 @@ Once the database is hosted:
 2. In Vercel, **Add New → Project**, import the repository. The framework preset is Next.js.
 3. Add every variable from `.env.example` under **Settings → Environment Variables**. Set `NEXT_PUBLIC_SITE_URL` to your production URL.
 4. Build command: `npm run build`. It runs `prisma generate`, then `prisma migrate deploy` against `DATABASE_URL`, then `next build`.
-5. Deploy, then test booking, login, the pause flow and `/admin` on the production URL.
+5. Deploy, then test booking, login, the pause flow and `/dimeji` on the production URL.
 
 ## Project layout
 
